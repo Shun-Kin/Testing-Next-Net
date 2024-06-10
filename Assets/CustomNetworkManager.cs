@@ -1,17 +1,17 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using TMPro;
 using Mirror;
 
 
 public class CustomNetworkManager : NetworkManager
 {
-    public static string Nickname = string.Empty;   // Хранит никнейм игрока, введённый в главном меню
+    public static string Nickname = string.Empty;   // РҐСЂР°РЅРёС‚ РЅРёРєРЅРµР№Рј РёРіСЂРѕРєР°, РІРІРµРґС‘РЅРЅС‹Р№ РІ РіР»Р°РІРЅРѕРј РјРµРЅСЋ
     public TMP_InputField inputNickname;
 
 
     public override void Awake()
     {
-        inputNickname.text = Nickname;  // Вернуть никнейм в поле ввода при отключении от сервера
+        inputNickname.text = Nickname;  // Р’РµСЂРЅСѓС‚СЊ РЅРёРєРЅРµР№Рј РІ РїРѕР»Рµ РІРІРѕРґР° РїСЂРё РѕС‚РєР»СЋС‡РµРЅРёРё РѕС‚ СЃРµСЂРІРµСЂР°
         base.Awake();
     }
 
@@ -23,7 +23,7 @@ public class CustomNetworkManager : NetworkManager
     public override void OnStartServer()
     {
         base.OnStartServer();
-        NetworkServer.RegisterHandler<CreatePlayerMessage>(OnCreatePlayer); // Регистрация обработчика сообщения на сервере
+        NetworkServer.RegisterHandler<CreatePlayerMessage>(OnCreatePlayer); // Р РµРіРёСЃС‚СЂР°С†РёСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєР° СЃРѕРѕР±С‰РµРЅРёСЏ РЅР° СЃРµСЂРІРµСЂРµ
     }
 
     public override void OnClientConnect()
@@ -32,27 +32,27 @@ public class CustomNetworkManager : NetworkManager
 
         CreatePlayerMessage playerMessage = new CreatePlayerMessage
         {
-            nickname = string.IsNullOrEmpty(Nickname) ? "Бобба" : Nickname  // Если поле никнейма пустое, то используется никнейм по умолчанию
+            nickname = string.IsNullOrEmpty(Nickname) ? "Р‘РѕР±Р±Р°" : Nickname  // Р•СЃР»Рё РїРѕР»Рµ РЅРёРєРЅРµР№РјР° РїСѓСЃС‚РѕРµ, С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РЅРёРєРЅРµР№Рј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
         };
 
-        NetworkClient.Send(playerMessage);  // Клиент отправляет сообщение на сервер
+        NetworkClient.Send(playerMessage);  // РљР»РёРµРЅС‚ РѕС‚РїСЂР°РІР»СЏРµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РЅР° СЃРµСЂРІРµСЂ
     }
 
     void OnCreatePlayer(NetworkConnectionToClient conn, CreatePlayerMessage message)
     {
-        // Создание объекта игрока с установленным никнеймом и позицией
+        // РЎРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚Р° РёРіСЂРѕРєР° СЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹Рј РЅРёРєРЅРµР№РјРѕРј Рё РїРѕР·РёС†РёРµР№
         GameObject gameobject = Instantiate(playerPrefab);
 
         CustomPlayerController player = gameobject.GetComponent<CustomPlayerController>();
         player.playerName = message.nickname;
         gameobject.transform.position = GameManager.GetPlayerSpawnPosition();
 
-        NetworkServer.AddPlayerForConnection(conn, gameobject); // Добавление объекта игрока для соединения
+        NetworkServer.AddPlayerForConnection(conn, gameobject); // Р”РѕР±Р°РІР»РµРЅРёРµ РѕР±СЉРµРєС‚Р° РёРіСЂРѕРєР° РґР»СЏ СЃРѕРµРґРёРЅРµРЅРёСЏ
     }
 }
 
 
-// Структура сетевого сообщения
+// РЎС‚СЂСѓРєС‚СѓСЂР° СЃРµС‚РµРІРѕРіРѕ СЃРѕРѕР±С‰РµРЅРёСЏ
 public struct CreatePlayerMessage : NetworkMessage
 {
     public string nickname;

@@ -1,13 +1,14 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections;
 using TMPro;
 using Mirror;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 
 public class CustomPlayerController : NetworkBehaviour
 {
-    private static Transform localCameraHolder; // "Держатель" камеры локального игрока, используется для поворота информации над головой игроков в сторону камеры локального игрока
+    private static Transform localCameraHolder; // "Р”РµСЂР¶Р°С‚РµР»СЊ" РєР°РјРµСЂС‹ Р»РѕРєР°Р»СЊРЅРѕРіРѕ РёРіСЂРѕРєР°, РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ РїРѕРІРѕСЂРѕС‚Р° РёРЅС„РѕСЂРјР°С†РёРё РЅР°Рґ РіРѕР»РѕРІРѕР№ РёРіСЂРѕРєРѕРІ РІ СЃС‚РѕСЂРѕРЅСѓ РєР°РјРµСЂС‹ Р»РѕРєР°Р»СЊРЅРѕРіРѕ РёРіСЂРѕРєР°
     private static readonly string tagMedkit = "Medkit";
     private static readonly int layerPlayer = 6;
 
@@ -17,50 +18,50 @@ public class CustomPlayerController : NetworkBehaviour
     public TMP_Text textHP;
     public TMP_Text textName;
 
-    public bool grounded;   // Заземление игрока (стоит ли на поверхности)
-    // Настройки заземления, падения
+    public bool grounded;   // Р—Р°Р·РµРјР»РµРЅРёРµ РёРіСЂРѕРєР° (СЃС‚РѕРёС‚ Р»Рё РЅР° РїРѕРІРµСЂС…РЅРѕСЃС‚Рё)
+    // РќР°СЃС‚СЂРѕР№РєРё Р·Р°Р·РµРјР»РµРЅРёСЏ, РїР°РґРµРЅРёСЏ
     public float groundDistance;
     public Transform groundCheck;
     public LayerMask groundMask;
-    public float fallDamageVelocity;    // Порог скорости, при которой будет нанесён урон
-    public float fallDamage;            // Урон при падении, зависит от скорости падения
+    public float fallDamageVelocity;    // РџРѕСЂРѕРі СЃРєРѕСЂРѕСЃС‚Рё, РїСЂРё РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµС‚ РЅР°РЅРµСЃС‘РЅ СѓСЂРѕРЅ
+    public float fallDamage;            // РЈСЂРѕРЅ РїСЂРё РїР°РґРµРЅРёРё, Р·Р°РІРёСЃРёС‚ РѕС‚ СЃРєРѕСЂРѕСЃС‚Рё РїР°РґРµРЅРёСЏ
 
-    private Rigidbody rBody;
+    private Rigidbody _rb;
     private Animator animator;
-    private Vector2 move, look;     // Хранят ввод игрока (перемещение, взгляд)
+    private Vector2 move, look;     // РҐСЂР°РЅСЏС‚ РІРІРѕРґ РёРіСЂРѕРєР° (РїРµСЂРµРјРµС‰РµРЅРёРµ, РІР·РіР»СЏРґ)
     private float lookRotation;
-    private float lastVelocityY;    // Скорость игрока по оси Y
-    private int localHP;            // !!!Локальные очки здоровья игрока (HP), необходимо в случае столкновения с несколькими аптечками одновременно (аптечки в одной точке по X,Z), иначе так как основное HP обновляется через сервер, то в последующих обработках столкновений OnTriggerEnter будет устаревшее значение HP
+    private float lastVelocityY;    // РЎРєРѕСЂРѕСЃС‚СЊ РёРіСЂРѕРєР° РїРѕ РѕСЃРё Y
+    private int localHP;            // !!!Р›РѕРєР°Р»СЊРЅС‹Рµ РѕС‡РєРё Р·РґРѕСЂРѕРІСЊСЏ РёРіСЂРѕРєР° (HP), РЅРµРѕР±С…РѕРґРёРјРѕ РІ СЃР»СѓС‡Р°Рµ СЃС‚РѕР»РєРЅРѕРІРµРЅРёСЏ СЃ РЅРµСЃРєРѕР»СЊРєРёРјРё Р°РїС‚РµС‡РєР°РјРё РѕРґРЅРѕРІСЂРµРјРµРЅРЅРѕ (Р°РїС‚РµС‡РєРё РІ РѕРґРЅРѕР№ С‚РѕС‡РєРµ РїРѕ X,Z), РёРЅР°С‡Рµ С‚Р°Рє РєР°Рє РѕСЃРЅРѕРІРЅРѕРµ HP РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ С‡РµСЂРµР· СЃРµСЂРІРµСЂ, С‚Рѕ РІ РїРѕСЃР»РµРґСѓСЋС‰РёС… РѕР±СЂР°Р±РѕС‚РєР°С… СЃС‚РѕР»РєРЅРѕРІРµРЅРёР№ OnTriggerEnter Р±СѓРґРµС‚ СѓСЃС‚Р°СЂРµРІС€РµРµ Р·РЅР°С‡РµРЅРёРµ HP
 
-    // Синхронизируемые переменные (hook определяет метод клиента, который будет выполняться при обновлении занчений с сервера)
+    // РЎРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµРјС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ (hook РѕРїСЂРµРґРµР»СЏРµС‚ РјРµС‚РѕРґ РєР»РёРµРЅС‚Р°, РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё Р·Р°РЅС‡РµРЅРёР№ СЃ СЃРµСЂРІРµСЂР°)
     [SyncVar(hook = nameof(SyncNickname))]
     public string playerName;
     [SyncVar(hook = nameof(SyncHP))]
-    public int HP; // Очки здоровья игрока
+    public int HP; // РћС‡РєРё Р·РґРѕСЂРѕРІСЊСЏ РёРіСЂРѕРєР°
     [SyncVar(hook = nameof(SyncDead))]
     private bool isDead;
 
 
     private void Awake()
     {
-        rBody = GetComponent<Rigidbody>();
+        _rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
     }
 
-    public override void OnStartLocalPlayer()   // Вызывается ТОЛЬКО для объекта игрока на локальном клиенте (локального игрока) после OnStartClient (как метод Start, но вызывается раньше)
+    public override void OnStartLocalPlayer()   // Р’С‹Р·С‹РІР°РµС‚СЃСЏ РўРћР›Р¬РљРћ РґР»СЏ РѕР±СЉРµРєС‚Р° РёРіСЂРѕРєР° РЅР° Р»РѕРєР°Р»СЊРЅРѕРј РєР»РёРµРЅС‚Рµ (Р»РѕРєР°Р»СЊРЅРѕРіРѕ РёРіСЂРѕРєР°) РїРѕСЃР»Рµ OnStartClient (РєР°Рє РјРµС‚РѕРґ Start, РЅРѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ СЂР°РЅСЊС€Рµ)
     {
-        cameraHolder.gameObject.AddComponent<Camera>(); // Создать камеру
+        cameraHolder.gameObject.AddComponent<Camera>(); // РЎРѕР·РґР°С‚СЊ РєР°РјРµСЂСѓ
         localCameraHolder = cameraHolder;
         localHP = HP;
-        GetComponent<PlayerInput>().enabled = true; // Сделать ввод активным
-        GameManager.SetLayerWithChildren(gameObject.transform, layerPlayer);    // Установить слой Player
+        GetComponent<PlayerInput>().enabled = true; // РЎРґРµР»Р°С‚СЊ РІРІРѕРґ Р°РєС‚РёРІРЅС‹Рј
+        GameManager.SetLayerWithChildren(gameObject.transform, layerPlayer);    // РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РѕР№ Player
     }
 
     private void FixedUpdate()
     {
         if (isLocalPlayer && !isDead)
         {
-            // Проверка заземления, падения/прыжка
+            // РџСЂРѕРІРµСЂРєР° Р·Р°Р·РµРјР»РµРЅРёСЏ, РїР°РґРµРЅРёСЏ/РїСЂС‹Р¶РєР°
             if (Physics.CheckSphere(groundCheck.position, groundDistance, groundMask))
             {
                 if (!grounded)
@@ -68,8 +69,8 @@ public class CustomPlayerController : NetworkBehaviour
                     grounded = true;
                     animator.SetBool("isFalling", false);
 
-                    float minVelocity = rBody.velocity.y < lastVelocityY ? rBody.velocity.y : lastVelocityY;    // Скорость из предыдущего вызова FixedUpdate может быть меньше
-                    if (minVelocity < fallDamageVelocity)   // Получить урон, если скорость ниже порогового значения
+                    float minVelocity = _rb.velocity.y < lastVelocityY ? _rb.velocity.y : lastVelocityY;    // РЎРєРѕСЂРѕСЃС‚СЊ РёР· РїСЂРµРґС‹РґСѓС‰РµРіРѕ РІС‹Р·РѕРІР° FixedUpdate РјРѕР¶РµС‚ Р±С‹С‚СЊ РјРµРЅСЊС€Рµ
+                    if (minVelocity < fallDamageVelocity)   // РџРѕР»СѓС‡РёС‚СЊ СѓСЂРѕРЅ, РµСЃР»Рё СЃРєРѕСЂРѕСЃС‚СЊ РЅРёР¶Рµ РїРѕСЂРѕРіРѕРІРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ
                     {
                         TakeDamage((int)Mathf.Abs((minVelocity - fallDamageVelocity) * fallDamage));
                     }
@@ -81,7 +82,7 @@ public class CustomPlayerController : NetworkBehaviour
                 animator.SetBool("isFalling", true);
             }
 
-            lastVelocityY = rBody.velocity.y;
+            lastVelocityY = _rb.velocity.y;
         }
 
         Move();
@@ -89,14 +90,14 @@ public class CustomPlayerController : NetworkBehaviour
 
     private void Update()
     {
-        statusBarTransform.LookAt(localCameraHolder);   // Повернуть информацию над головой персонажей (никнейм, хп) на камеру локального персонажа
+        statusBarTransform.LookAt(localCameraHolder);   // РџРѕРІРµСЂРЅСѓС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РЅР°Рґ РіРѕР»РѕРІРѕР№ РїРµСЂСЃРѕРЅР°Р¶РµР№ (РЅРёРєРЅРµР№Рј, С…Рї) РЅР° РєР°РјРµСЂСѓ Р»РѕРєР°Р»СЊРЅРѕРіРѕ РїРµСЂСЃРѕРЅР°Р¶Р°
         
         if (!isLocalPlayer) return;
 
         Look();
     }
 
-    // Перемещение игрока
+    // РџРµСЂРµРјРµС‰РµРЅРёРµ РёРіСЂРѕРєР°
     private void Move()
     {
         if (isDead)
@@ -104,71 +105,76 @@ public class CustomPlayerController : NetworkBehaviour
             move = Vector2.zero;
         }
 
-        Vector3 currentVelocity = rBody.velocity;
+        Vector3 currentVelocity = _rb.velocity;
         Vector3 targetVelocity = new Vector3(move.x, 0, move.y);
-        targetVelocity *= speed;                                        // Посчитать целевую скорость
-        targetVelocity = transform.TransformDirection(targetVelocity);  // Выровнять направление
-        Vector3 velocityChange = targetVelocity - currentVelocity;      // Посчитать силу
+        targetVelocity *= speed;                                        // РџРѕСЃС‡РёС‚Р°С‚СЊ С†РµР»РµРІСѓСЋ СЃРєРѕСЂРѕСЃС‚СЊ
+        targetVelocity = transform.TransformDirection(targetVelocity);  // Р’С‹СЂРѕРІРЅСЏС‚СЊ РЅР°РїСЂР°РІР»РµРЅРёРµ
+        Vector3 velocityChange = targetVelocity - currentVelocity;      // РџРѕСЃС‡РёС‚Р°С‚СЊ СЃРёР»Сѓ
         velocityChange = new Vector3(velocityChange.x, 0, velocityChange.z);
-        Vector3.ClampMagnitude(velocityChange, maxForce);               // Ограничить силу
-        rBody.AddForce(velocityChange, ForceMode.VelocityChange);       // ForceMode.VelocityChange - мгновенно изменить скорость
+        Vector3.ClampMagnitude(velocityChange, maxForce);               // РћРіСЂР°РЅРёС‡РёС‚СЊ СЃРёР»Сѓ
+        _rb.AddForce(velocityChange, ForceMode.VelocityChange);       // ForceMode.VelocityChange - РјРіРЅРѕРІРµРЅРЅРѕ РёР·РјРµРЅРёС‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ
     }
 
-    // Изменение напрвления взгляда и поворота игрока
+    // РР·РјРµРЅРµРЅРёРµ РЅР°РїСЂРІР»РµРЅРёСЏ РІР·РіР»СЏРґР° Рё РїРѕРІРѕСЂРѕС‚Р° РёРіСЂРѕРєР°
     private void Look()
     {
-        // Направление взгляда
+        // РќР°РїСЂР°РІР»РµРЅРёРµ РІР·РіР»СЏРґР°
         lookRotation += -look.y * sensitivity;
-        lookRotation = Mathf.Clamp(lookRotation, -90, 60);  // Ограничить взгляд вверх/вниз
+        lookRotation = Mathf.Clamp(lookRotation, -90, 60);  // РћРіСЂР°РЅРёС‡РёС‚СЊ РІР·РіР»СЏРґ РІРІРµСЂС…/РІРЅРёР·
         cameraHolder.eulerAngles = new Vector3(lookRotation, cameraHolder.eulerAngles.y, cameraHolder.eulerAngles.z);
 
         if (isDead) return;
 
-        // Повернуть игрока в сторону взгляда
+        // РџРѕРІРµСЂРЅСѓС‚СЊ РёРіСЂРѕРєР° РІ СЃС‚РѕСЂРѕРЅСѓ РІР·РіР»СЏРґР°
         transform.Rotate(Vector3.up * look.x * sensitivity);
     }
 
-    // Прыжок
+    // РџСЂС‹Р¶РѕРє
     private void Jump()
     {
-        rBody.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
+        _rb.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);
     }
 
-    // Вызов ввода передвижения
+    // Р’С‹Р·РѕРІ РІРІРѕРґР° РїРµСЂРµРґРІРёР¶РµРЅРёСЏ
     public void OnMove(InputAction.CallbackContext context)
     {
         move = context.ReadValue<Vector2>();
         animator.SetBool("isRunning", (move.x != 0) || (move.y != 0));
     }
 
-    // Вызов ввода направления взгляда
+    // Р’С‹Р·РѕРІ РІРІРѕРґР° РЅР°РїСЂР°РІР»РµРЅРёСЏ РІР·РіР»СЏРґР°
     public void OnLook(InputAction.CallbackContext context)
     {
         look = context.ReadValue<Vector2>();
     }
 
-    // Вызов ввода прыжка
+    // Р’С‹Р·РѕРІ РІРІРѕРґР° РїСЂС‹Р¶РєР°
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (grounded && !isDead)
+        if (context.started && grounded && !isDead)
         {
             Jump();
         }
     }
 
-    // Метод, который будет выполняться на клиенте при обновлении значения на сервере
+    public void OnExit(InputAction.CallbackContext context)
+    {
+        GameManager.StopGame();
+    }
+
+    // РњРµС‚РѕРґ, РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ РЅР° РєР»РёРµРЅС‚Рµ РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё Р·РЅР°С‡РµРЅРёСЏ РЅР° СЃРµСЂРІРµСЂРµ
     public void SyncNickname(string oldValue, string newValue)
     {
         textName.text = playerName;
     }
 
-    [Command]   // Вызвать метод на клиенте, чтобы выполнить код на сервере
-    public void CmdSetHP(int _HP)   // Информация игрока направляется на сервер, затем сервер обновляет sync vars на всех клиентах
+    [Command]   // Р’С‹Р·РІР°С‚СЊ РјРµС‚РѕРґ РЅР° РєР»РёРµРЅС‚Рµ, С‡С‚РѕР±С‹ РІС‹РїРѕР»РЅРёС‚СЊ РєРѕРґ РЅР° СЃРµСЂРІРµСЂРµ
+    public void CmdSetHP(int _HP)   // РРЅС„РѕСЂРјР°С†РёСЏ РёРіСЂРѕРєР° РЅР°РїСЂР°РІР»СЏРµС‚СЃСЏ РЅР° СЃРµСЂРІРµСЂ, Р·Р°С‚РµРј СЃРµСЂРІРµСЂ РѕР±РЅРѕРІР»СЏРµС‚ sync vars РЅР° РІСЃРµС… РєР»РёРµРЅС‚Р°С…
     {
         HP = _HP;
     }
 
-    // Обновляет хп и удаляет объект
+    // РћР±РЅРѕРІР»СЏРµС‚ С…Рї Рё СѓРґР°Р»СЏРµС‚ РѕР±СЉРµРєС‚
     [Command]
     public void CmdSetHPAndDestroySource(int _HP, GameObject source)
     {
@@ -176,7 +182,7 @@ public class CustomPlayerController : NetworkBehaviour
         HP = _HP;
     }
 
-    // Обновляет хп и состояние смерти
+    // РћР±РЅРѕРІР»СЏРµС‚ С…Рї Рё СЃРѕСЃС‚РѕСЏРЅРёРµ СЃРјРµСЂС‚Рё
     [Command]
     public void CmdSetHPAndDead(int _HP, bool _isDead)
     {
@@ -190,18 +196,17 @@ public class CustomPlayerController : NetworkBehaviour
         textHP.text = HP.ToString();
     }
 
-    // Вызывает респавн игрока через указанное количество секунд
-    IEnumerator RespawnIn(float seconds)
+    // Р’С‹Р·С‹РІР°РµС‚ СЂРµСЃРїР°РІРЅ РёРіСЂРѕРєР°
+    private async UniTaskVoid RespawnInAsync(int millisecondsDelay, CancellationToken cancellationToken)
     {
-        yield return new WaitForSeconds(seconds);
-
-        GameManager.ReplacePlayer(connectionToClient);
+        await UniTask.Delay(millisecondsDelay, cancellationToken: cancellationToken);
+        GameManager.ReplacePlayer(connectionToClient);    // РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ РѕР±СЉРµРєС‚Р° РёРіСЂРѕРєР°
     }
 
     private void SyncDead(bool oldValue, bool newValue)
     {
         animator.SetTrigger("isDead");
-        StartCoroutine(RespawnIn(3));
+        RespawnInAsync(3000, this.GetCancellationTokenOnDestroy()).Forget();
     }
 
     public void TakeDamage(int value)

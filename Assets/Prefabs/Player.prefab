@@ -2988,7 +2988,7 @@ MonoBehaviour:
   speed: 5
   sensitivity: 0.1
   maxForce: 1
-  jumpForce: 3
+  jumpForce: 6
   statusBarTransform: {fileID: 6082631236615420878}
   textHP: {fileID: 6082631235939227402}
   textName: {fileID: 6082631236524488010}
@@ -3115,6 +3115,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: fef68db6-d958-4eff-b002-4107ebfc72e2
     m_ActionName: Player/Jump[/Keyboard/space]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8778985122448622152}
+        m_TargetAssemblyTypeName: CustomPlayerController, Assembly-CSharp
+        m_MethodName: OnExit
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d2281e54-4779-4532-8126-5439b092d0c8
+    m_ActionName: Player/Exit[/Keyboard/escape]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

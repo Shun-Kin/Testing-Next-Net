@@ -1,4 +1,4 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using System.Collections.Generic;
 using Mirror;
 
@@ -6,16 +6,16 @@ using Mirror;
 public class GameManager : NetworkBehaviour
 {
     private static GameManager instance;
-    private static readonly RaycastHit[] hits = new RaycastHit[3];  // Буфер для RaycastNonAlloc
-    private static readonly Collider[] colliders = new Collider[1]; // Буфер для OverlapSphereNonAlloc
+    private static readonly RaycastHit[] hits = new RaycastHit[3];  // Р‘СѓС„РµСЂ РґР»СЏ RaycastNonAlloc
+    private static readonly Collider[] colliders = new Collider[1]; // Р‘СѓС„РµСЂ РґР»СЏ OverlapSphereNonAlloc
 
-    // Информация для спавна игрока
+    // РРЅС„РѕСЂРјР°С†РёСЏ РґР»СЏ СЃРїР°РІРЅР° РёРіСЂРѕРєР°
     public GameObject playerPrefab;
     public Transform playerSpawn;
-    public float playerSpawnRadius;     // Радиус от точки playerSpawn, в котором будет заспавнен игрок
-    public float playerOverlapRadius;   // Радиус сферы спавна игрока, для определения свободного пространства
+    public float playerSpawnRadius;     // Р Р°РґРёСѓСЃ РѕС‚ С‚РѕС‡РєРё playerSpawn, РІ РєРѕС‚РѕСЂРѕРј Р±СѓРґРµС‚ Р·Р°СЃРїР°РІРЅРµРЅ РёРіСЂРѕРє
+    public float playerOverlapRadius;   // Р Р°РґРёСѓСЃ СЃС„РµСЂС‹ СЃРїР°РІРЅР° РёРіСЂРѕРєР°, РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ СЃРІРѕР±РѕРґРЅРѕРіРѕ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР°
 
-    // Информация для спавна аптечек
+    // РРЅС„РѕСЂРјР°С†РёСЏ РґР»СЏ СЃРїР°РІРЅР° Р°РїС‚РµС‡РµРє
     public GameObject medkitPrefab;
     public int medkitCount;
     public Transform medkitSpawn;
@@ -27,7 +27,7 @@ public class GameManager : NetworkBehaviour
     {
         instance = this;
 
-        // Сервер спавнит аптечки
+        // РЎРµСЂРІРµСЂ СЃРїР°РІРЅРёС‚ Р°РїС‚РµС‡РєРё
         if (isServer)
         {
             Vector3 randPosition;
@@ -37,18 +37,18 @@ public class GameManager : NetworkBehaviour
             {
                 randPosition = GetRandomSpawnPosition(medkitSpawn.position, medkitSpawnRadius, medkitOverlapRadius, 0);
                 randRotation.y = Random.Range(0f, 1f);
-                NetworkServer.Spawn(Instantiate(medkitPrefab, randPosition, randRotation, medkitSpawn));    // Сервер спавнит аптечки на клиентах
+                NetworkServer.Spawn(Instantiate(medkitPrefab, randPosition, randRotation, medkitSpawn));    // РЎРµСЂРІРµСЂ СЃРїР°РІРЅРёС‚ Р°РїС‚РµС‡РєРё РЅР° РєР»РёРµРЅС‚Р°С…
             }
         }
     }
 
-    // Возвращает точку спавна для игрока
+    // Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕС‡РєСѓ СЃРїР°РІРЅР° РґР»СЏ РёРіСЂРѕРєР°
     public static Vector3 GetPlayerSpawnPosition()
     {
         return GetRandomSpawnPosition(instance.playerSpawn.position, instance.playerSpawnRadius, instance.playerOverlapRadius, -1.45f);
     }
 
-    // Возвращает случайную точку со свободным пространством (positionYOffset - смещение по оси Y для корректировки высоты спавна)
+    // Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃР»СѓС‡Р°Р№РЅСѓСЋ С‚РѕС‡РєСѓ СЃРѕ СЃРІРѕР±РѕРґРЅС‹Рј РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕРј (positionYOffset - СЃРјРµС‰РµРЅРёРµ РїРѕ РѕСЃРё Y РґР»СЏ РєРѕСЂСЂРµРєС‚РёСЂРѕРІРєРё РІС‹СЃРѕС‚С‹ СЃРїР°РІРЅР°)
     public static Vector3 GetRandomSpawnPosition(Vector3 spawnPoint, float spawnRadius, float overlapRadius, float positionYOffset)
     {
         Vector3 randPosition = Vector3.zero;
@@ -56,13 +56,13 @@ public class GameManager : NetworkBehaviour
 
         do
         {
-            // Рейкаст сверху в случайную точку
+            // Р РµР№РєР°СЃС‚ СЃРІРµСЂС…Сѓ РІ СЃР»СѓС‡Р°Р№РЅСѓСЋ С‚РѕС‡РєСѓ
             randPosition.Set(spawnPoint.x + Random.Range(-spawnRadius, spawnRadius), 11f, spawnPoint.z + Random.Range(-spawnRadius, spawnRadius));
             hitCount = Physics.RaycastNonAlloc(randPosition, Vector3.down, hits, 12f);
-            randPosition.y = hits[Random.Range(0, hitCount)].point.y + overlapRadius + 0.05f;   // Рейкаст пробивает все объекты на пути, поэтому выбираем случайно объект, над которым будемспавнить объект
+            randPosition.y = hits[Random.Range(0, hitCount)].point.y + overlapRadius + 0.05f;   // Р РµР№РєР°СЃС‚ РїСЂРѕР±РёРІР°РµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹ РЅР° РїСѓС‚Рё, РїРѕСЌС‚РѕРјСѓ РІС‹Р±РёСЂР°РµРј СЃР»СѓС‡Р°Р№РЅРѕ РѕР±СЉРµРєС‚, РЅР°Рґ РєРѕС‚РѕСЂС‹Рј Р±СѓРґРµРј СЃРїР°РІРЅРёС‚СЊ РѕР±СЉРµРєС‚
 
-            hitCount = Physics.OverlapSphereNonAlloc(randPosition, overlapRadius, colliders);   // Проверить свободное пространство сферой
-            if (hitCount == 0)                                                                  // Если в сфере нет объектов, то точка спавна найдена, иначе повторить поиск
+            hitCount = Physics.OverlapSphereNonAlloc(randPosition, overlapRadius, colliders);   // РџСЂРѕРІРµСЂРёС‚СЊ СЃРІРѕР±РѕРґРЅРѕРµ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ СЃС„РµСЂРѕР№
+            if (hitCount == 0)                                                                  // Р•СЃР»Рё РІ СЃС„РµСЂРµ РЅРµС‚ РѕР±СЉРµРєС‚РѕРІ, С‚Рѕ С‚РѕС‡РєР° СЃРїР°РІРЅР° РЅР°Р№РґРµРЅР°, РёРЅР°С‡Рµ РїРѕРІС‚РѕСЂРёС‚СЊ РїРѕРёСЃРє
             {
                 randPosition.y += positionYOffset;
                 return randPosition;
@@ -70,7 +70,7 @@ public class GameManager : NetworkBehaviour
         } while (true);
     }
 
-    // Замена объекта игрока для соединения
+    // Р—Р°РјРµРЅР° РѕР±СЉРµРєС‚Р° РёРіСЂРѕРєР° РґР»СЏ СЃРѕРµРґРёРЅРµРЅРёСЏ
     public void _ReplacePlayer(NetworkConnectionToClient conn)
     {
         GameObject oldPlayer = conn.identity.gameObject;
@@ -79,7 +79,7 @@ public class GameManager : NetworkBehaviour
         Destroy(oldPlayer, 0.1f);
     }
 
-    // Респавн игрока с созданием нового объекта
+    // Р РµСЃРїР°РІРЅ РёРіСЂРѕРєР° СЃ СЃРѕР·РґР°РЅРёРµРј РЅРѕРІРѕРіРѕ РѕР±СЉРµРєС‚Р°
     public static void ReplacePlayer(NetworkConnectionToClient conn)
     {
         GameObject oldPlayer = conn.identity.gameObject;
@@ -90,22 +90,22 @@ public class GameManager : NetworkBehaviour
         player.transform.position = GetPlayerSpawnPosition();
 
         NetworkServer.ReplacePlayerForConnection(conn, newPlayer, true);
-        Destroy(oldPlayer, 0.1f);   // Удалить предыдущий объект игрока, который теперь заменён. Задержка необходима для завершения замены
+        Destroy(oldPlayer, 0.1f);   // РЈРґР°Р»РёС‚СЊ РїСЂРµРґС‹РґСѓС‰РёР№ РѕР±СЉРµРєС‚ РёРіСЂРѕРєР°, РєРѕС‚РѕСЂС‹Р№ С‚РµРїРµСЂСЊ Р·Р°РјРµРЅС‘РЅ. Р—Р°РґРµСЂР¶РєР° РЅРµРѕР±С…РѕРґРёРјР° РґР»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ Р·Р°РјРµРЅС‹
     }
 
-    // Установить слой для объекта и всех дочерних объектов
+    // РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РѕР№ РґР»СЏ РѕР±СЉРµРєС‚Р° Рё РІСЃРµС… РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ
     public static void SetLayerWithChildren(Transform root, int layer)
     {
         Queue<Transform> queue = new Queue<Transform>();
-        queue.Enqueue(root);    // Поместить трансформацию основного объектав очередь
+        queue.Enqueue(root);    // РџРѕРјРµСЃС‚РёС‚СЊ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёСЋ РѕСЃРЅРѕРІРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°РІ РѕС‡РµСЂРµРґСЊ
 
         while (queue.Count > 0)
         {
-            // Извлечь трансформацию из очереди и установить слой
+            // РР·РІР»РµС‡СЊ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёСЋ РёР· РѕС‡РµСЂРµРґРё Рё СѓСЃС‚Р°РЅРѕРІРёС‚СЊ СЃР»РѕР№
             Transform current = queue.Dequeue();
             current.gameObject.layer = layer;
 
-            // Поместить в очередь трансформации дочерних объектов
+            // РџРѕРјРµСЃС‚РёС‚СЊ РІ РѕС‡РµСЂРµРґСЊ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ
             foreach (Transform child in current)
             {
                 queue.Enqueue(child);
@@ -113,17 +113,17 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void StopGame()
+    public static void StopGame()
     {
-        if (NetworkServer.active && NetworkClient.isConnected)  // Остановка хоста
+        if (NetworkServer.active && NetworkClient.isConnected)  // РћСЃС‚Р°РЅРѕРІРєР° С…РѕСЃС‚Р°
         {
             NetworkManager.singleton.StopHost();
         }
-        else if (NetworkClient.isConnected)                     // Остановка клиента
+        else if (NetworkClient.isConnected)                     // РћСЃС‚Р°РЅРѕРІРєР° РєР»РёРµРЅС‚Р°
         {
             NetworkManager.singleton.StopClient();
         }
-        else if (NetworkServer.active)                          // Остановка сервера
+        else if (NetworkServer.active)                          // РћСЃС‚Р°РЅРѕРІРєР° СЃРµСЂРІРµСЂР°
         {
             NetworkManager.singleton.StopServer();
         }
