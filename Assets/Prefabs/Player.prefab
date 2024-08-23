@@ -2986,13 +2986,16 @@ MonoBehaviour:
   syncInterval: 0
   cameraHolder: {fileID: 694218088594372669}
   speed: 5
-  sensitivity: 0.1
+  lookSensitivity: 0.1
+  lookUpConstraint: -90
+  lookDownConstraint: 60
   maxForce: 1
   jumpForce: 6
-  statusBarTransform: {fileID: 6082631236615420878}
-  textHP: {fileID: 6082631235939227402}
-  textName: {fileID: 6082631236524488010}
-  grounded: 1
+  respawnTime: 3000
+  medkitHealth: 30
+  statusBar: {fileID: 6082631236615420878}
+  nicknameText: {fileID: 6082631236524488010}
+  healthText: {fileID: 6082631235939227402}
   groundDistance: 0.15
   groundCheck: {fileID: 6082631235609868297}
   groundMask:
@@ -3000,8 +3003,8 @@ MonoBehaviour:
     m_Bits: 1
   fallDamageVelocity: -10
   fallDamage: 15
-  playerName: 
-  HP: 100
+  nickname: 
+  health: 100
 --- !u!114 &6082631236866473748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3059,46 +3062,6 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 8ddb1f4c-71b6-4320-bcac-cf06dcc5b0e0
     m_ActionName: Player/Look[/Mouse/delta]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 3005bc74-99f6-49b8-8c6b-0fe23881b341
-    m_ActionName: UI/Navigate[/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: ef412b89-3287-42ad-ba69-f787ddb23977
-    m_ActionName: UI/Submit[/Keyboard/enter]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 236dd75e-7ba1-420c-8d51-574759ea5f9b
-    m_ActionName: UI/Cancel[/Keyboard/escape]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 9b50d525-69d2-476d-9b4e-82ed942e7b5a
-    m_ActionName: UI/Point[/Mouse/position]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: f46c10b4-e4b2-4e88-9229-0e5164e5a020
-    m_ActionName: UI/Click[/Mouse/leftButton]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 114b93b7-ee3e-4934-ad9a-5219794fe82b
-    m_ActionName: UI/ScrollWheel[/Mouse/scroll]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 13b172e6-a21c-49c8-8dd6-2ce3729caaf2
-    m_ActionName: UI/MiddleClick[/Mouse/middleButton]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: e3e5c295-ce24-4da5-8bc3-0df4e728148c
-    m_ActionName: UI/RightClick[/Mouse/rightButton]
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: d16151c4-1323-4fcb-b351-559a70ef54ce
-    m_ActionName: UI/TrackedDevicePosition
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: b8550403-d563-4272-b499-7b89708abcf1
-    m_ActionName: UI/TrackedDeviceOrientation
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 8778985122448622152}
@@ -3462,7 +3425,7 @@ GameObject:
   - component: {fileID: 6082631235939227403}
   - component: {fileID: 6082631235939227402}
   m_Layer: 0
-  m_Name: HP
+  m_Name: Health
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3634,7 +3597,7 @@ GameObject:
   - component: {fileID: 6082631236524488011}
   - component: {fileID: 6082631236524488010}
   m_Layer: 0
-  m_Name: Name
+  m_Name: Nickname
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3722,7 +3685,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Name
+  m_text: Nickname
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

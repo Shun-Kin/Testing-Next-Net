@@ -608,7 +608,7 @@ MonoBehaviour:
   evaluationMethod: 0
   evaluationInterval: 3
   timeInterpolationGui: 0
-  inputNickname: {fileID: 181103309}
+  nicknameInputField: {fileID: 181103309}
 --- !u!1 &397836433
 GameObject:
   m_ObjectHideFlags: 0
